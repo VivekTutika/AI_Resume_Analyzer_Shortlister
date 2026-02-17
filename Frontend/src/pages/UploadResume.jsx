@@ -206,7 +206,7 @@ const UploadResume = () => {
                 value={cutoffPercentage}
                 onChange={(e) => setCutoffPercentage(Number(e.target.value))}
               />
-              <p className="text-xs text-gray-500">Candidates below this percentage will be filtered out</p>
+              <p className="text-xs text-gray-500">Candidates below this percentage will be ignored</p>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
@@ -221,7 +221,7 @@ const UploadResume = () => {
                 value={requiredCandidates}
                 onChange={(e) => setRequiredCandidates(Number(e.target.value))}
               />
-              <p className="text-xs text-gray-500">Maximum number of candidates to display</p>
+              <p className="text-xs text-gray-500">Maximum number of candidates to short-list</p>
             </div>
           </div>
 
@@ -261,6 +261,11 @@ const UploadResume = () => {
                 <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-red-800 mb-2">{results.message}</h3>
                 <p className="text-red-600">No candidates meet the specified cut-off percentage of {results.cutoff_percentage}%</p>
+                {results.suggestion_message && (
+                  <div className="mt-4 bg-yellow-50 border border-yellow-300 rounded-lg p-4">
+                    <p className="text-yellow-800 font-medium">{results.suggestion_message}</p>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="space-y-4">
@@ -268,6 +273,14 @@ const UploadResume = () => {
                   Showing {results.candidates.length} candidate(s) meeting the cut-off criteria
                   {results.candidates.length < results.required_candidates && " (fewer than required)"}
                 </p>
+                {results.suggestion_message && (
+                  <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4 mb-4">
+                    <p className="text-yellow-800 font-medium flex items-center gap-2">
+                      <AlertCircle className="h-5 w-5" />
+                      {results.suggestion_message}
+                    </p>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {results.candidates.map((candidate, index) => (
                     <div 

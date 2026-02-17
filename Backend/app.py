@@ -62,11 +62,11 @@ def upload_resume():
     if not candidates:
         return jsonify({"error": "No valid resume files found"}), 400
     
-    # Filter candidates above cutoff
-    selected_candidates = [c for c in candidates if c["match_percentage"] >= cutoff_percentage]
+    # Sort all candidates by match percentage (descending)
+    all_candidates_sorted = sorted(candidates, key=lambda x: x["match_percentage"], reverse=True)
     
-    # Sort by match percentage (descending)
-    selected_candidates.sort(key=lambda x: x["match_percentage"], reverse=True)
+    # Filter candidates above cutoff
+    selected_candidates = [c for c in all_candidates_sorted if c["match_percentage"] >= cutoff_percentage]
     
     # Apply required candidates limit
     if required_candidates > 0:
@@ -83,8 +83,26 @@ def upload_resume():
     # Add message if no candidates meet cutoff
     if not selected_candidates:
         response["message"] = "No Candidate meets the Cut-Off Percentage"
+        # Suggest cutoff based on the top candidate's match percentage
+        if all_candidates_sorted:
+            suggested_cutoff = int(all_candidates_sorted[0]["match_percentage"])
+            response["suggested_cutoff"] = suggested_cutoff
+            response["suggestion_message"] = f"Try reducing Cut-Off Percentage to {suggested_cutoff}% to see candidates"
+    # Add suggestion if fewer candidates than required
+    elif len(selected_candidates) < required_candidates:
+        # Get the match percentage of the candidate at position required_candidates (if exists)
+        if len(all_candidates_sorted) >= required_candidates:
+            # Candidate at the required position (0-indexed: required_candidates - 1)
+            suggested_cutoff = int(all_candidates_sorted[required_candidates - 1]["match_percentage"])
+        else:
+            # Not enough total candidates, suggest the lowest candidate's percentage
+            suggested_cutoff = int(all_candidates_sorted[-1]["match_percentage"])
+        
+        response["suggested_cutoff"] = suggested_cutoff
+        response["suggestion_message"] = f"Try reducing Cut-Off Percentage to {suggested_cutoff}% to meet required candidate count"
     
     return jsonify(response)
+
 
 
 
